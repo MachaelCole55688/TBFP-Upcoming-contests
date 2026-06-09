@@ -308,7 +308,7 @@ function render(){
       const statusText = isOpen ? match.contests.length + ' contests available' : 'Coming soon';
       const detailsBlock = isOpen
         ? '<div class="contest-options">' + contests + '</div>'
-        : '<div class="coming-soon-note">This match is not open yet. Contest options will appear here once the match ID is live.</div>';
+        : '<div class="coming-soon-note">This match is not open yet. Contest options will appear here once it becomes available.</div>';
       return '<article class="contest-card">' +
         '<div class="contest-top"><div><span class="league ' + match.league + '">' + leagueIcon(match.league) + match.league + '</span><div class="contest-name">' + statusText + '</div>' + matchupLogos(match.game) + '<div class="game">' + match.game + '</div></div></div>' +
         '<div class="metrics">' +
