@@ -93,6 +93,7 @@ h1{font-family:'Barlow Condensed';font-size:clamp(44px,8vw,82px);line-height:.9;
 .option-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .mini-pill{display:inline-flex;align-items:center;min-height:22px;border-radius:999px;background:#fff;border:1px solid var(--line);padding:0 8px;color:#475467;font-size:12px;font-weight:700}
 .option-spots{font-family:'Barlow Condensed';font-size:22px;font-weight:900;white-space:nowrap;color:#172033}
+.coming-soon-note{padding:14px 16px;border:1px dashed #d6deea;border-radius:6px;background:#f9fbfd;color:#667085;font-size:14px;line-height:1.5}
 .join{background:var(--green);color:#fff}
 .join:hover{background:#168756}
 .join.disabled{background:#d5dde7;color:#667085;pointer-events:none}
@@ -293,8 +294,9 @@ function render(){
   const schedule = document.getElementById('schedule');
   schedule.innerHTML = Object.entries(groups).map(([date, group]) => {
     const cards = group.rows.map(match => {
-      const disabled = match.matchId ? '' : ' disabled';
-      const joinText = match.matchId ? 'Open Match' : 'Coming Soon';
+      const isOpen = Boolean(match.matchId);
+      const disabled = isOpen ? '' : ' disabled';
+      const joinText = isOpen ? 'Open Match' : 'Coming Soon';
       const totalSpots = match.contests.reduce((sum, item) => sum + (Number(item.spots) || 0), 0);
       const entrySummary = matchEntrySummary(match);
       const contests = match.contests.map(item =>
@@ -303,15 +305,19 @@ function render(){
           '<div class="option-spots">' + plain(item.participants) + '</div>' +
         '</div>'
       ).join('');
+      const statusText = isOpen ? match.contests.length + ' contests available' : 'Coming soon';
+      const detailsBlock = isOpen
+        ? '<div class="contest-options">' + contests + '</div>'
+        : '<div class="coming-soon-note">This match is not open yet. Contest options will appear here once the match ID is live.</div>';
       return '<article class="contest-card">' +
-        '<div class="contest-top"><div><span class="league ' + match.league + '">' + leagueIcon(match.league) + match.league + '</span><div class="contest-name">' + match.contests.length + ' contests available</div>' + matchupLogos(match.game) + '<div class="game">' + match.game + '</div></div></div>' +
+        '<div class="contest-top"><div><span class="league ' + match.league + '">' + leagueIcon(match.league) + match.league + '</span><div class="contest-name">' + statusText + '</div>' + matchupLogos(match.game) + '<div class="game">' + match.game + '</div></div></div>' +
         '<div class="metrics">' +
           '<div class="metric"><div class="metric-label">Entry Fee</div><div class="metric-value">' + entrySummary + '</div></div>' +
           '<div class="metric"><div class="metric-label">Contests</div><div class="metric-value">' + match.contests.length + '</div></div>' +
           '<div class="metric"><div class="metric-label">Total Spots</div><div class="metric-value">' + plain(totalSpots) + '</div></div>' +
           '<div class="metric"><div class="metric-label">League</div><div class="metric-value">' + match.league + '</div></div>' +
         '</div>' +
-        '<div class="contest-options">' + contests + '</div>' +
+        detailsBlock +
         '<div class="card-actions"><span class="date-meta">' + match.day + ' match</span><a class="btn join' + disabled + '" href="' + matchLink(match) + '" target="_blank" rel="noopener">' + joinText + '</a></div>' +
       '</article>';
     }).join('');
