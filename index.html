@@ -64,6 +64,8 @@ h1{font-family:'Barlow Condensed';font-size:clamp(44px,8vw,82px);line-height:.9;
 .contest-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .contest-card{background:linear-gradient(180deg,#ffffff,#fbfdff);border:1px solid var(--line);border-radius:8px;padding:14px;display:grid;gap:12px;min-width:0;box-shadow:0 12px 28px rgba(23,32,51,.07)}
 .contest-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.contest-head-main{min-width:0}
+.contest-head-side{display:flex;justify-content:flex-end;flex:1;min-width:250px}
 .league{display:inline-flex;align-items:center;min-height:24px;border-radius:999px;padding:0 9px;background:#eaf1ff;border:1px solid #bfd1ff;color:#1d4ed8;font-size:12px;font-weight:800;letter-spacing:.06em}
 .league.PBA{background:#e8f8ef;border-color:#b8e9ce;color:#087744}
 .league.FIFA{background:#fff0ee;border-color:#ffc7c1;color:#b42318}
@@ -78,6 +80,14 @@ h1{font-family:'Barlow Condensed';font-size:clamp(44px,8vw,82px);line-height:.9;
 .team-logo img{width:82%;height:82%;object-fit:contain;display:block}
 .team-fallback{font-family:'Barlow Condensed';font-size:18px;font-weight:900;color:#344054;letter-spacing:.03em}
 .vs-mark{font-family:'Barlow Condensed';font-size:16px;font-weight:900;color:#98a2b3}
+.featured-players{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:0;max-width:320px}
+.player-pill{display:inline-flex;align-items:center;gap:10px;min-height:72px;border-radius:22px;background:linear-gradient(180deg,#ffffff,#f7fbff);border:1px solid #d7e0ea;padding:8px 14px 8px 8px;color:#344054;font-size:13px;font-weight:700;box-shadow:0 10px 22px rgba(23,32,51,.08)}
+.player-photo{width:56px;height:56px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:#eef3f8;flex:none;box-shadow:inset 0 0 0 1px rgba(23,32,51,.05)}
+.player-photo img{width:100%;height:100%;object-fit:cover;object-position:center 18%;display:block}
+.player-fallback{font-family:'Barlow Condensed';font-size:18px;font-weight:900;color:#475467;letter-spacing:.06em}
+.player-meta{display:flex;flex-direction:column;gap:3px;min-width:0}
+.player-name{font-size:13px;font-weight:800;color:#172033;line-height:1.2}
+.player-team{font-family:'Barlow Condensed';font-size:11px;letter-spacing:.08em;color:#98a2b3;text-transform:uppercase}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .metric{background:#f7fafc;border:1px solid #dfe7ef;border-radius:6px;padding:9px;min-width:0}
 .metric-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
@@ -118,6 +128,9 @@ h1{font-family:'Barlow Condensed';font-size:clamp(44px,8vw,82px);line-height:.9;
   .filters{grid-template-columns:1fr}
   .search{width:100%}
   .contest-list{grid-template-columns:1fr}
+  .contest-top{flex-direction:column}
+  .contest-head-side{justify-content:flex-start;width:100%;min-width:0}
+  .featured-players{justify-content:flex-start;max-width:none}
 }
 @media(max-width:480px){
   .shell{padding:18px 12px 38px}
@@ -268,6 +281,29 @@ const TEAM_LOGOS = {
   CZR:{src:'https://flagcdn.com/w160/cz.png', alt:'Czech Republic flag'}
 };
 
+const FEATURED_PLAYERS = {
+  'GIN vs TNT': [
+    { team:'GIN', name:'Justin Brownlee', photo:'assets/justin-brownlee.jpeg', photoPosition:'50% 10%' },
+    { team:'TNT', name:'Chris McCullough', photo:'assets/chris-mccullough.jpeg', photoPosition:'50% 12%' }
+  ],
+  'TNT vs GIN': [
+    { team:'TNT', name:'Chris McCullough', photo:'assets/chris-mccullough.jpeg', photoPosition:'50% 12%' },
+    { team:'GIN', name:'Justin Brownlee', photo:'assets/justin-brownlee.jpeg', photoPosition:'50% 10%' }
+  ],
+  'NYK vs SAS': [
+    { team:'NYK', name:'Jalen Brunson', photo:'https://cdn.nba.com/headshots/nba/latest/1040x760/1628973.png' },
+    { team:'SAS', name:'Victor Wembanyama', photo:'https://cdn.nba.com/headshots/nba/latest/1040x760/1641705.png' }
+  ],
+  'MEX vs SA': [
+    { team:'MEX', name:'Julian Quinones', photo:'https://commons.wikimedia.org/wiki/Special:FilePath/Quinones%201.png', photoPosition:'50% 14%' },
+    { team:'SA', name:'Oswin Appollis', photo:'assets/oswin-appollis.webp', photoPosition:'50% 10%' }
+  ],
+  'KOR vs CZR': [
+    { team:'KOR', name:'Son Heung-min', photo:'assets/son-heung-min.webp', photoPosition:'50% 16%' },
+    { team:'CZR', name:'Patrik Schick', photo:'assets/patrik-schick.webp', photoPosition:'50% 18%' }
+  ]
+};
+
 function teamLogo(team){
   const logo = TEAM_LOGOS[team];
   if(!logo) return '<div class="team-logo"><span class="team-fallback">' + team + '</span></div>';
@@ -282,6 +318,23 @@ function matchupLogos(game){
     '<div class="vs-mark">VS</div>' +
     teamLogo(teams[1]) +
   '</div>';
+}
+
+function featuredPlayers(game){
+  const players = FEATURED_PLAYERS[String(game || '').trim()];
+  if(!players || !players.length) return '';
+  function playerAvatar(player){
+    if(player.photo){
+      const styles = [];
+      if(player.photoPosition) styles.push('object-position:' + player.photoPosition);
+      const imageStyle = styles.length ? ' style="' + styles.join(';') + ';"' : '';
+      return '<span class="player-photo"><img src="' + player.photo + '" alt="' + player.name + '" loading="lazy" referrerpolicy="no-referrer"' + imageStyle + '></span>';
+    }
+    return '<span class="player-photo"><span class="player-fallback">' + player.team + '</span></span>';
+  }
+  return '<div class="featured-players">' + players.map(player =>
+    '<span class="player-pill">' + playerAvatar(player) + '<span class="player-meta"><span class="player-name">' + player.name + '</span><span class="player-team">' + player.team + '</span></span></span>'
+  ).join('') + '</div>';
 }
 
 function render(){
@@ -310,7 +363,7 @@ function render(){
         ? '<div class="contest-options">' + contests + '</div>'
         : '<div class="coming-soon-note">This match is not open yet. Contest options will appear here once it becomes available.</div>';
       return '<article class="contest-card">' +
-        '<div class="contest-top"><div><span class="league ' + match.league + '">' + leagueIcon(match.league) + match.league + '</span><div class="contest-name">' + statusText + '</div>' + matchupLogos(match.game) + '<div class="game">' + match.game + '</div></div></div>' +
+        '<div class="contest-top"><div class="contest-head-main"><span class="league ' + match.league + '">' + leagueIcon(match.league) + match.league + '</span><div class="contest-name">' + statusText + '</div>' + matchupLogos(match.game) + '<div class="game">' + match.game + '</div></div><div class="contest-head-side">' + featuredPlayers(match.game) + '</div></div>' +
         '<div class="metrics">' +
           '<div class="metric"><div class="metric-label">Entry Fee</div><div class="metric-value">' + entrySummary + '</div></div>' +
           '<div class="metric"><div class="metric-label">Contests</div><div class="metric-value">' + match.contests.length + '</div></div>' +
