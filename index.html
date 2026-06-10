@@ -62,7 +62,8 @@ h1{font-family:'Barlow Condensed';font-size:clamp(44px,8vw,82px);line-height:.9;
 .date-title{font-family:'Barlow Condensed';font-size:34px;font-weight:900;text-transform:uppercase}
 .date-meta{color:var(--muted);font-size:13px}
 .contest-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.contest-card{background:linear-gradient(180deg,#ffffff,#fbfdff);border:1px solid var(--line);border-radius:8px;padding:14px;display:grid;gap:12px;min-width:0;box-shadow:0 12px 28px rgba(23,32,51,.07)}
+.contest-card{background:linear-gradient(180deg,#ffffff,#fbfdff);border:1px solid var(--line);border-radius:8px;padding:14px;display:grid;gap:12px;min-width:0;box-shadow:0 12px 28px rgba(23,32,51,.07);transform:translateY(0);transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;opacity:0;animation:cardReveal .45s ease forwards}
+.contest-card:hover{transform:translateY(-4px);box-shadow:0 18px 34px rgba(23,32,51,.12);border-color:#cfd9e5}
 .contest-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .contest-head-main{min-width:0}
 .contest-head-side{display:flex;justify-content:flex-end;flex:1;min-width:250px}
@@ -73,6 +74,9 @@ h1{font-family:'Barlow Condensed';font-size:clamp(44px,8vw,82px);line-height:.9;
 .sport-icon.basketball{animation:basketBounce 1.8s ease-in-out infinite}
 .sport-icon.football{animation:footballRoll 2.2s ease-in-out infinite}
 .contest-name{font-weight:800;font-size:17px;line-height:1.25;margin-top:9px}
+.countdown-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+.countdown-badge{display:inline-flex;align-items:center;min-height:24px;border-radius:999px;padding:0 10px;background:#fff3cf;border:1px solid #edcc7a;color:#8a5b05;font-size:12px;font-weight:800;letter-spacing:.04em;animation:badgePulse 2.2s ease-in-out infinite}
+.countdown-note{font-size:12px;color:#667085;font-weight:700}
 .game{font-family:'Barlow Condensed';font-size:27px;font-weight:900;line-height:1;margin-top:4px}
 .contest-id{display:none}
 .matchup{display:flex;align-items:center;gap:10px;margin-top:10px}
@@ -110,6 +114,11 @@ h1{font-family:'Barlow Condensed';font-size:clamp(44px,8vw,82px);line-height:.9;
 .tag{font-size:12px;font-weight:700;border-radius:999px;padding:5px 8px;background:#eef3f8;color:#475467}
 .tag.hot{background:#fff0ee;color:#b42318}
 .tag.value{background:#e8f8ef;color:#087744}
+.bonus-wrap{position:relative;display:inline-flex;align-items:center}
+.money-pop{position:absolute;right:-6px;top:-16px;display:flex;gap:2px;pointer-events:none}
+.money-pop span{font-family:'Barlow Condensed';font-size:12px;font-weight:900;color:#c88d16;opacity:0;transform:translateY(8px) scale(.7);animation:moneyRise 1.8s ease-in-out infinite}
+.money-pop span:nth-child(2){animation-delay:.22s}
+.money-pop span:nth-child(3){animation-delay:.44s}
 .card-actions{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .contest-options{display:grid;gap:8px}
 .contest-option{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;background:#f7fafc;border:1px solid #dfe7ef;border-radius:6px;padding:10px}
@@ -133,8 +142,24 @@ h1{font-family:'Barlow Condensed';font-size:clamp(44px,8vw,82px);line-height:.9;
   45%{transform:translateX(3px) rotate(18deg)}
   75%{transform:translateX(-1px) rotate(-8deg)}
 }
+@keyframes badgePulse{
+  0%,100%{transform:scale(1);box-shadow:0 0 0 rgba(237,204,122,0)}
+  50%{transform:scale(1.03);box-shadow:0 0 0 6px rgba(237,204,122,.12)}
+}
+@keyframes moneyRise{
+  0%{opacity:0;transform:translateY(8px) scale(.7)}
+  20%{opacity:1}
+  55%{opacity:1;transform:translateY(-4px) scale(1)}
+  100%{opacity:0;transform:translateY(-14px) scale(1.05)}
+}
+@keyframes cardReveal{
+  from{opacity:0;transform:translateY(14px)}
+  to{opacity:1;transform:translateY(0)}
+}
 @media (prefers-reduced-motion:reduce){
-  .sport-icon{animation:none!important}
+  .sport-icon,.countdown-badge,.contest-card,.money-pop span{animation:none!important}
+  .contest-card{opacity:1}
+  .money-pop span{opacity:1;transform:none}
 }
 @media(max-width:840px){
   .hero{grid-template-columns:1fr}
@@ -251,11 +276,37 @@ function plain(value){
   return value == null || value === '' ? '-' : String(value);
 }
 
+function parseTaipeiDate(isoDate){
+  return new Date(isoDate + 'T00:00:00+08:00');
+}
+
+function todayTaipeiDate(){
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Taipei',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(new Date()).reduce((acc, part) => {
+    acc[part.type] = part.value;
+    return acc;
+  }, {});
+  return new Date(parts.year + '-' + parts.month + '-' + parts.day + 'T00:00:00+08:00');
+}
+
+function relativeDateMeta(isoDate){
+  const current = todayTaipeiDate();
+  const target = parseTaipeiDate(isoDate);
+  const diffDays = Math.round((target - current) / 86400000);
+  if(diffDays <= 0) return { badge:'Today', note:'Available now' };
+  if(diffDays === 1) return { badge:'Tomorrow', note:'Starts tomorrow' };
+  return { badge:'In ' + diffDays + ' days', note:'Starts ' + isoDate.slice(5).replace('-', '/') };
+}
+
 function tags(item){
   const out = [];
   if(item.entry <= 50) out.push('<span class="tag value">Low Entry</span>');
-  if(item.bonus) out.push('<span class="tag hot">Bonus ' + peso(item.bonus) + '</span>');
-  if(item.guaranteedPrize) out.push('<span class="tag hot">Guaranteed ' + peso(item.guaranteedPrize) + ' Prize Pool</span>');
+  if(item.bonus) out.push('<span class="bonus-wrap"><span class="tag hot">Bonus ' + peso(item.bonus) + '</span><span class="money-pop" aria-hidden="true"><span>₱</span><span>₱</span><span>₱</span></span></span>');
+  if(item.guaranteedPrize) out.push('<span class="bonus-wrap"><span class="tag hot">Guaranteed ' + peso(item.guaranteedPrize) + ' Prize Pool</span><span class="money-pop" aria-hidden="true"><span>₱</span><span>₱</span><span>₱</span></span></span>');
   if(item.ruby) out.push('<span class="tag">Ruby Bonus</span>');
   if(/swap/i.test(item.contest)) out.push('<span class="tag">Ruby Swap</span>');
   return out.join('');
@@ -375,12 +426,13 @@ function render(){
   }, {});
   const schedule = document.getElementById('schedule');
   schedule.innerHTML = Object.entries(groups).map(([date, group]) => {
-    const cards = group.rows.map(match => {
+    const cards = group.rows.map((match, index) => {
       const isOpen = Boolean(match.matchId);
       const disabled = isOpen ? '' : ' disabled';
       const joinText = isOpen ? 'Open Match' : 'Coming Soon';
       const totalSpots = match.contests.reduce((sum, item) => sum + (Number(item.spots) || 0), 0);
       const entrySummary = matchEntrySummary(match);
+      const relativeMeta = relativeDateMeta(match.date);
       const contests = match.contests.map(item =>
         '<div class="contest-option">' +
           '<div><div class="option-name">' + item.contest + '</div><div class="option-meta"><span class="mini-pill">Entry ' + entryLabel(item) + '</span><span class="mini-pill">Spots ' + plain(item.spots) + '</span>' + tags(item) + '</div></div>' +
@@ -391,8 +443,8 @@ function render(){
       const detailsBlock = isOpen
         ? '<div class="contest-options">' + contests + '</div>'
         : '<div class="coming-soon-note">This match is not open yet. Contest options will appear here once it becomes available.</div>';
-      return '<article class="contest-card">' +
-        '<div class="contest-top"><div class="contest-head-main"><span class="league ' + match.league + '">' + leagueIcon(match.league) + match.league + '</span><div class="contest-name">' + statusText + '</div>' + matchupLogos(match.game) + '<div class="game">' + match.game + '</div></div><div class="contest-head-side">' + featuredPlayers(match.game) + '</div></div>' +
+      return '<article class="contest-card" style="animation-delay:' + (index * 0.08).toFixed(2) + 's">' +
+        '<div class="contest-top"><div class="contest-head-main"><span class="league ' + match.league + '">' + leagueIcon(match.league) + match.league + '</span><div class="contest-name">' + statusText + '</div><div class="countdown-row"><span class="countdown-badge">' + relativeMeta.badge + '</span><span class="countdown-note">' + relativeMeta.note + '</span></div>' + matchupLogos(match.game) + '<div class="game">' + match.game + '</div></div><div class="contest-head-side">' + featuredPlayers(match.game) + '</div></div>' +
         '<div class="metrics">' +
           '<div class="metric"><div class="metric-label">Entry Fee</div><div class="metric-value">' + entrySummary + '</div></div>' +
           '<div class="metric"><div class="metric-label">Contests</div><div class="metric-value">' + match.contests.length + '</div></div>' +
