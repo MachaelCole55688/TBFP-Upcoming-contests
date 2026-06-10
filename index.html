@@ -78,6 +78,20 @@ h1{font-family:'Barlow Condensed';font-size:clamp(44px,8vw,82px);line-height:.9;
 .matchup{display:flex;align-items:center;gap:10px;margin-top:10px}
 .team-logo{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;border:2px solid #fff;background:#fff;box-shadow:0 8px 18px rgba(23,32,51,.12);overflow:hidden}
 .team-logo img{width:82%;height:82%;object-fit:contain;display:block}
+.team-logo.badge{border-color:#d8e2ee}
+.team-logo.badge .team-fallback{width:100%;height:100%;display:grid;place-items:center;border-radius:50%;font-size:17px}
+.team-logo.badge.TNT .team-fallback{background:linear-gradient(135deg,#edf4ff,#fff7ed);color:#1d4ed8}
+.team-logo.badge.GIN .team-fallback{background:linear-gradient(135deg,#fff1f2,#fff7ed);color:#b42318}
+.team-logo.badge.NYK .team-fallback{background:linear-gradient(135deg,#eff6ff,#fff7ed);color:#1d4ed8}
+.team-logo.badge.SAS .team-fallback{background:linear-gradient(135deg,#f8fafc,#eef2f6);color:#344054}
+.team-logo.badge.SEA .team-fallback{background:linear-gradient(135deg,#ecfdf3,#eefcf8);color:#087443}
+.team-logo.badge.GSV .team-fallback{background:linear-gradient(135deg,#eef2ff,#f5f3ff);color:#5b21b6}
+.team-logo.badge.MEX .team-fallback{background:linear-gradient(135deg,#ecfdf3,#fff7ed);color:#087443}
+.team-logo.badge.SA .team-fallback{background:linear-gradient(135deg,#eff6ff,#eef2ff);color:#1d4ed8}
+.team-logo.badge.KOR .team-fallback{background:linear-gradient(135deg,#eff6ff,#fff1f2);color:#1d4ed8}
+.team-logo.badge.CZR .team-fallback{background:linear-gradient(135deg,#eff6ff,#f8fafc);color:#475467}
+.team-logo.badge.CAN .team-fallback{background:linear-gradient(135deg,#fff1f2,#fff7ed);color:#b42318}
+.team-logo.badge.BHZ .team-fallback{background:linear-gradient(135deg,#eff6ff,#f8fafc);color:#1d4ed8}
 .team-fallback{font-family:'Barlow Condensed';font-size:18px;font-weight:900;color:#344054;letter-spacing:.03em}
 .vs-mark{font-family:'Barlow Condensed';font-size:16px;font-weight:900;color:#98a2b3}
 .featured-players{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:0;max-width:320px}
@@ -321,8 +335,8 @@ const FEATURED_PLAYERS = {
 
 function teamLogo(team){
   const logo = TEAM_LOGOS[team];
-  if(!logo) return '<div class="team-logo"><span class="team-fallback">' + team + '</span></div>';
-  return '<div class="team-logo"><img src="' + logo.src + '" alt="' + logo.alt + '" loading="lazy" referrerpolicy="no-referrer"></div>';
+  if(!logo) return '<div class="team-logo badge ' + team + '"><span class="team-fallback">' + team + '</span></div>';
+  return '<div class="team-logo ' + team + '"><img src="' + logo.src + '" alt="' + logo.alt + '" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.className=\'team-logo badge ' + team + '\';this.remove();this.parentNode.innerHTML=\'<span class=&quot;team-fallback&quot;>' + team + '</span>\';"></div>';
 }
 
 function matchupLogos(game){
