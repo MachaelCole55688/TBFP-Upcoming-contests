@@ -244,8 +244,15 @@ const DATA = [
   {"date":"2026-06-14","label":"June 14","day":"Sun.","league":"PBA","contest":"💎 100K FINALS BONUS","game":"TNT vs GIN","matchId":"PBA519","contestId":"197802","entry":50,"participants":null,"slips":null,"spots":500,"ruby":true},
   {"date":"2026-06-14","label":"June 14","day":"Sun.","league":"FIFA","contest":"🌍 World Cup Kickoff Clash","game":"QAT vs SUI","matchId":"392869","contestId":"197803","entry":50,"participants":null,"slips":null,"spots":150,"guaranteedPrize":500},
   {"date":"2026-06-14","label":"June 14","day":"Sun.","league":"FIFA","contest":"🌍 World Cup Kickoff Clash","game":"BRA vs MAR","matchId":"392870","contestId":"197804","entry":50,"participants":null,"slips":null,"spots":150,"guaranteedPrize":500},
-  {"date":"2026-06-14","label":"June 14","day":"Sun.","league":"FIFA","contest":"🌍 World Cup Kickoff Clash","game":"HAI vs SCO","matchId":"392871","contestId":"197805","entry":50,"participants":null,"slips":null,"spots":150,"guaranteedPrize":500}
+  {"date":"2026-06-14","label":"June 14","day":"Sun.","league":"FIFA","contest":"🌍 World Cup Kickoff Clash","game":"HAI vs SCO","matchId":"392871","contestId":"197805","entry":50,"participants":null,"slips":null,"spots":150,"guaranteedPrize":500},
+  {"date":"2026-06-15","label":"June 15","day":"Mon.","league":"FIFA","contest":"🌍 World Cup Kickoff Clash","game":"GER vs CUR","matchId":"392873","contestId":"197854","entry":50,"participants":null,"slips":null,"spots":150,"guaranteedPrize":500},
+  {"date":"2026-06-15","label":"June 15","day":"Mon.","league":"FIFA","contest":"🌍 World Cup Kickoff Clash","game":"NED vs JPN","matchId":"392874","contestId":"197855","entry":50,"participants":null,"slips":null,"spots":150,"guaranteedPrize":500}
 ];
+
+const HIDDEN_MATCHES = new Set([
+  '2026-06-12|FIFA|MEX vs SA',
+  '2026-06-12|FIFA|KOR vs CZR'
+]);
 
 function matchLink(match){
   if(!match.matchId) return GAME_URL;
@@ -357,7 +364,11 @@ const TEAM_LOGOS = {
   BRA:{src:'https://flagcdn.com/w160/br.png', alt:'Brazil flag'},
   MAR:{src:'https://flagcdn.com/w160/ma.png', alt:'Morocco flag'},
   HAI:{src:'https://flagcdn.com/w160/ht.png', alt:'Haiti flag'},
-  SCO:{src:'https://flagcdn.com/w160/gb-sct.png', alt:'Scotland flag'}
+  SCO:{src:'https://flagcdn.com/w160/gb-sct.png', alt:'Scotland flag'},
+  GER:{src:'https://flagcdn.com/w160/de.png', alt:'Germany flag'},
+  CUR:{src:'https://flagcdn.com/w160/cw.png', alt:'Curacao flag'},
+  NED:{src:'https://flagcdn.com/w160/nl.png', alt:'Netherlands flag'},
+  JPN:{src:'https://flagcdn.com/w160/jp.png', alt:'Japan flag'}
 };
 
 const FEATURED_PLAYERS = {
@@ -425,7 +436,7 @@ function featuredPlayers(game){
 }
 
 function render(){
-  const filtered = DATA;
+  const filtered = DATA.filter(item => !HIDDEN_MATCHES.has([item.date, item.league, item.game].join('|')));
   const matches = groupMatches(filtered);
   const groups = matches.reduce((acc,item) => {
     (acc[item.date] ||= {label:item.label, day:item.day, rows:[]}).rows.push(item);
